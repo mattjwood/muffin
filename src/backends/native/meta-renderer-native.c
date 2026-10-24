@@ -198,6 +198,7 @@ typedef struct _MetaOnscreenNative
     struct gbm_surface *surface;
     MetaDrmBuffer *current_fb;
     MetaDrmBuffer *next_fb;
+    MetaDrmBuffer *previous_fb;
   } gbm;
 
 #ifdef HAVE_EGL_DEVICE
@@ -783,6 +784,7 @@ free_current_bo (CoglOnscreen *onscreen)
   CoglOnscreenEGL *onscreen_egl = onscreen->winsys;
   MetaOnscreenNative *onscreen_native = onscreen_egl->platform;
 
+  g_clear_object (&onscreen_native->gbm.previous_fb);
   g_clear_object (&onscreen_native->gbm.current_fb);
   free_current_secondary_bo (onscreen);
 }
@@ -1092,7 +1094,15 @@ meta_onscreen_native_swap_drm_fb (CoglOnscreen *onscreen)
   CoglOnscreenEGL *onscreen_egl =  onscreen->winsys;
   MetaOnscreenNative *onscreen_native = onscreen_egl->platform;
 
-  free_current_bo (onscreen);
+  /* Hold on to the buffer that was just replaced until the next flip.
+   * Handing it back to GBM straight away lets the next frame be drawn into
+   * it while the end of it may still be scanned out, which showed partly
+   * drawn frames at the bottom of a 360Hz screen once the sync delay was
+   * gone. */
+  g_clear_object (&onscreen_native->gbm.previous_fb);
+  onscreen_native->gbm.previous_fb =
+    g_steal_pointer (&onscreen_native->gbm.current_fb);
+  free_current_secondary_bo (onscreen);
 
   g_set_object (&onscreen_native->gbm.current_fb, onscreen_native->gbm.next_fb);
   g_clear_object (&onscreen_native->gbm.next_fb);
