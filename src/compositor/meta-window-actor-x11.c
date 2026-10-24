@@ -224,7 +224,7 @@ do_send_frame_timings (MetaWindowActorX11 *actor_x11,
     }
 
   ev.data.l[3] = refresh_interval;
-  ev.data.l[4] = 1000 * META_SYNC_DELAY;
+  ev.data.l[4] = 1000 * meta_compositor_get_sync_delay (display->compositor);
 
   meta_x11_error_trap_push (display->x11_display);
   XSendEvent (xdisplay, ev.window, False, 0, (XEvent *) &ev);

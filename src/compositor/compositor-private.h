@@ -59,6 +59,8 @@ MetaPluginManager * meta_compositor_get_plugin_manager (MetaCompositor *composit
 int64_t meta_compositor_monotonic_to_high_res_xserver_time (MetaCompositor *compositor,
                                                             int64_t         monotonic_time_us);
 
+int meta_compositor_get_sync_delay (MetaCompositor *compositor);
+
 void meta_compositor_flash_window (MetaCompositor *compositor,
                                    MetaWindow     *window);
 

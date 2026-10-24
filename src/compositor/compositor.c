@@ -766,12 +766,8 @@ meta_compositor_do_manage (MetaCompositor  *compositor,
     g_signal_connect_after (priv->stage, "after-paint",
                             G_CALLBACK (after_stage_paint), compositor);
 
-  if (meta_is_wayland_compositor ())
-    clutter_stage_set_sync_delay (CLUTTER_STAGE (priv->stage),
-                                  META_SYNC_DELAY_WAYLAND);
-  else
-    clutter_stage_set_sync_delay (CLUTTER_STAGE (priv->stage),
-                                  META_SYNC_DELAY);
+  clutter_stage_set_sync_delay (CLUTTER_STAGE (priv->stage),
+                                meta_compositor_get_sync_delay (compositor));
 
   priv->window_group = meta_window_group_new (display);
   priv->top_window_group = meta_window_group_new (display);
@@ -1974,6 +1970,19 @@ meta_compositor_monotonic_to_high_res_xserver_time (MetaCompositor *compositor,
   MetaCompositorClass *klass = META_COMPOSITOR_GET_CLASS (compositor);
 
   return klass->monotonic_to_high_res_xserver_time (compositor, monotonic_time_us);
+}
+
+/*
+ * The delay in ms after vblank before the stage draws the next frame; also
+ * reported to X clients in _NET_WM_FRAME_TIMINGS, so they must match.
+ */
+int
+meta_compositor_get_sync_delay (MetaCompositor *compositor)
+{
+  if (meta_is_wayland_compositor ())
+    return META_SYNC_DELAY_WAYLAND;
+  else
+    return META_SYNC_DELAY;
 }
 
 void
