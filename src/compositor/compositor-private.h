@@ -14,6 +14,10 @@
 /* Wait 2ms after vblank before starting to draw next frame */
 #define META_SYNC_DELAY 2
 
+/* On Wayland the KMS page flip event already paces drawing, and a fixed
+ * 2ms delay leaves under 1ms to draw on 360Hz displays, halving the rate */
+#define META_SYNC_DELAY_WAYLAND 0
+
 typedef struct _MetaLaters MetaLaters;
 
 struct _MetaCompositorClass
